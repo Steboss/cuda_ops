@@ -24,7 +24,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["cuda_ops"]
 
 [tool.coverage.run]
 source = ["cuda_ops"]
@@ -60,4 +60,4 @@ lint.fixable = ["E", "F", "I", "N", "W"]
 "__init__.py" = ["F401"]
 
 [tool.ruff.lint.isort]
-known-local-folder = ["videodiffusion", "testing_utils"]
+known-local-folder = ["cuda_ops"]
