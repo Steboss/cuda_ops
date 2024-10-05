@@ -33,8 +33,8 @@ class custom_build_ext(build_ext):
                 include_dirs = self.compiler.include_dirs
                 # this is aligned with the Makefile
                 nvcc_args = [
-                    "-c",
-                    src,
+                    # "-c",
+                    # src,
                     "-o",
                     obj,
                     "-Xcompiler",
