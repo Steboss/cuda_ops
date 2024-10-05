@@ -71,6 +71,7 @@ ext_modules = [
         ],
         include_dirs=["/usr/local/cuda/include"],
         library_dirs=["/usr/local/cuda/lib64"],
+        libraries=["cudart"],
         extra_compile_args={},
         language="c++",
     )
