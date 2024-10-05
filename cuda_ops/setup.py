@@ -32,16 +32,16 @@ class custom_build_ext(build_ext):
                 self.compiler.set_executable("compiler_so", "nvcc")
                 include_dirs = self.compiler.include_dirs
                 # this is aligned with the Makefile
-                nvcc_args = [
-                    src,
-                    "-o",
-                    obj,
+                nvcc_args = ["-I" + inc for inc in include_dirs]
+                nvcc_args += [
                     "-Xcompiler",
                     "-fPIC",
                     "-shared",
+                    "-o",
+                    obj,
+                    src,
                 ]
-                nvcc_args += ["-I" + inc for inc in include_dirs]
-                nvcc_args += extra_postargs
+                # nvcc_args += extra_postargs
                 print(nvcc_args)
                 self.compiler.spawn(["nvcc"] + nvcc_args)
             else:
@@ -74,7 +74,7 @@ ext_modules = [
         library_dirs=["/usr/local/cuda/lib64"],
         libraries=["cudart"],
         extra_compile_args={},
-        # extra_link_args=["-L/usr/local/cuda/lib64", "-lcudart"],
+        # python set extra_link_args=["-L/usr/local/cuda/lib64", "-lcudart"],
         language="g++",
     )
 ]
