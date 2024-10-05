@@ -96,7 +96,7 @@ ext_modules = [
     CUDAExtension(
         name="cuda_ops.rms_norm",
         sources=[
-            "cuda_ops/src/rms_norm.cu",
+            "src/rms_norm.cu",
         ],
         include_dirs=["/usr/local/cuda/include"],
         library_dirs=["/usr/local/cuda/lib64"],
