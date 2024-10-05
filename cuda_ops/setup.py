@@ -27,6 +27,9 @@ class custom_build_ext(build_ext):
         """Build the CUDA extensions"""
 
         def custom_compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
+            """This function is mainly for compiling the *.cu file
+            The cu file gets compiled in to an *.o file
+            """
             if src.endswith(".cu"):
                 # compile the .cu CUDA file
                 self.compiler.set_executable("compiler_so", "nvcc")
@@ -38,11 +41,10 @@ class custom_build_ext(build_ext):
                     "-fPIC",
                     "-shared",
                     "-o",
-                    obj,
+                    obj.replace(".o", ".so"),
                     src,
                 ]
-                # nvcc_args += extra_postargs
-                print(nvcc_args)
+                nvcc_args += extra_postargs
                 self.compiler.spawn(["nvcc"] + nvcc_args)
             else:
                 # default compiler
@@ -74,7 +76,7 @@ ext_modules = [
         library_dirs=["/usr/local/cuda/lib64"],
         libraries=["cudart"],
         extra_compile_args={},
-        # python set extra_link_args=["-L/usr/local/cuda/lib64", "-lcudart"],
+        extra_link_args=[],
         language="g++",
     )
 ]
