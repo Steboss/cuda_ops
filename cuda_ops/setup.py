@@ -66,7 +66,7 @@ class custom_build_ext(build_ext):
 
 ext_modules = [
     CUDAExtension(
-        name="rms_norm",
+        name="cuda_ops.rms_norm",
         sources=[
             "src/rms_norm.cu",
         ],
@@ -74,7 +74,7 @@ ext_modules = [
         library_dirs=["/usr/local/cuda/lib64"],
         libraries=["cudart"],
         extra_compile_args={},
-        language="gcc",
+        language="g++",
     )
 ]
 

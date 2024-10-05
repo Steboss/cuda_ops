@@ -60,7 +60,7 @@ static struct PyModuleDef module = {
     methods
 };
 
-PyMODINIT_FUNC PyInit_rms_norm(void) {
+PyMODINIT_FUNC PyInit_cuda_ops_rms_norm(void) {
     import_array();
     return PyModule_Create(&module);
 }
