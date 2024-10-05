@@ -28,20 +28,17 @@ class custom_build_ext(build_ext):
                 self.compiler.set_executable("compiler_so", "nvcc")
                 include_dirs = self.compiler.include_dirs
                 # this is aligned with the Makefile
-                nvcc_args = (
-                    [
-                        "-c",
-                        src,
-                        "-o",
-                        obj,
-                        "-std=c++11",
-                        "-Xcompiler",
-                        "-fPIC",
-                    ]
-                    + ["-I" + inc for inc in include_dirs]
-                    + extra_postargs
-                )
-
+                nvcc_args = [
+                    "-c",
+                    src,
+                    "-o",
+                    obj,
+                    "-std=c++11",
+                    "-Xcompiler",
+                    "-fPIC",
+                ]
+                nvcc_args += ["-I" + inc for inc in include_dirs]
+                nvcc_args += extra_postargs
                 self.compiler.spawn(["nvcc"] + nvcc_args)
             else:
                 # default compiler
