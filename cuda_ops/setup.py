@@ -41,6 +41,7 @@ class custom_build_ext(build_ext):
                     + ["-I" + inc for inc in include_dirs]
                     + extra_postargs
                 )
+
                 self.compiler.spawn(["nvcc"] + nvcc_args)
             else:
                 # default compiler
