@@ -40,6 +40,7 @@ class custom_build_ext(build_ext):
                     "-fPIC",
                     "-shared",
                     "-std=c++11",
+                    "-lcudart",
                 ]
                 nvcc_args += ["-I" + inc for inc in include_dirs]
                 nvcc_args += extra_postargs
