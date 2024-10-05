@@ -39,10 +39,10 @@ class custom_build_ext(build_ext):
                     "-Xcompiler",
                     "-fPIC",
                     "-shared",
-                    "-std=c++11",
                 ]
                 nvcc_args += ["-I" + inc for inc in include_dirs]
                 nvcc_args += extra_postargs
+                print(nvcc_args)
                 self.compiler.spawn(["nvcc"] + nvcc_args)
             else:
                 # default compiler
@@ -74,7 +74,7 @@ ext_modules = [
         library_dirs=["/usr/local/cuda/lib64"],
         libraries=["cudart"],
         extra_compile_args={},
-        extra_link_args=["-L/usr/local/cuda/lib64", "-lcudart"],
+        # extra_link_args=["-L/usr/local/cuda/lib64", "-lcudart"],
         language="g++",
     )
 ]
