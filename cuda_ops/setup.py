@@ -66,7 +66,7 @@ class custom_build_ext(build_ext):
 
 ext_modules = [
     CUDAExtension(
-        name="cuda_ops.rms_norm",
+        name="rms_norm",
         sources=[
             "src/rms_norm.cu",
         ],
