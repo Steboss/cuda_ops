@@ -66,7 +66,7 @@ ext_modules = [
             "src/rms_norm.cu",
         ],
         include_dirs=["/usr/local/cuda/include"],
-        libary_dirs=["/usr/local/cuda/lib64"],
+        library_dirs=["/usr/local/cuda/lib64"],
         extra_compile_args={},
         language="c++",
     )
