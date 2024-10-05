@@ -39,9 +39,9 @@ class custom_build_ext(build_ext):
                 nvcc_args += [
                     "-Xcompiler",
                     "-fPIC",
-                    "-shared",
+                    "-c",
                     "-o",
-                    obj.replace(".o", ".so"),
+                    obj,
                     src,
                 ]
                 nvcc_args += extra_postargs
@@ -77,7 +77,7 @@ ext_modules = [
         libraries=["cudart"],
         extra_compile_args={},
         extra_link_args=[],
-        language="g++",
+        language="c++",
     )
 ]
 
