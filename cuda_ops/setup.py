@@ -33,7 +33,6 @@ class custom_build_ext(build_ext):
                     src,
                     "-o",
                     obj,
-                    "-std=c++11",
                     "-Xcompiler",
                     "-fPIC",
                 ]
@@ -69,7 +68,7 @@ ext_modules = [
         include_dirs=["/usr/local/cuda/include"],
         libary_dirs=["/usr/local/cuda/lib64"],
         libraries=["cudart"],
-        extra_compile_args={"nvcc": []},
+        extra_compile_args={},
         language="c++",
     )
 ]
