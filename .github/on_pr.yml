@@ -13,7 +13,6 @@ permissions:
 jobs:
 
   python-lint-and-test-pr:
-    name: Push Python Package
     uses: ./.github/workflows/push_python_package.yml
     secrets:
       TOKEN: ${{ secrets.TOKEN }}
