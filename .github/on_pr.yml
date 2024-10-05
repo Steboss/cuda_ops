@@ -8,11 +8,12 @@ on:
 permissions:
   id-token: write
   contents: write
-  pull-requests: write
+  pull-requests: write d
 
 jobs:
 
   python-lint-and-test-pr:
+    name: Push Python Package
     uses: ./.github/workflows/push_python_package.yml
     secrets:
       TOKEN: ${{ secrets.TOKEN }}
