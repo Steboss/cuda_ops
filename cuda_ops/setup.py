@@ -1,84 +1,98 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from setuptools import setup, find_packages
-from setuptools.command.build_py import build_py
-from setuptools.command.install import install
-from setuptools.command.develop import develop
-import subprocess
-import shutil
-import os
 
-class Build(build_py):
-    def run(self):
-        super(Build, self).run()
-        self.execute_build()
-
-    def execute_build(self):
-        subprocess.check_call(['bash', './build/build.sh'])
-        build_lib = self.build_lib
-        src_dir = os.path.join(os.path.dirname(__file__), 'src')
-
-        for root, _, files in os.walk(src_dir):
-            for file in files:
-                if file.endswith('.so'):
-                    source_file = os.path.join(root, file)
-                    dest_file = os.path.join(build_lib, 'cuda_ops', os.path.relpath(source_file, src_dir))
-                    self.copy_file(source_file, dest_file)
-
-class Install(install):
-    def run(self):
-        self.reinitialize_command('build_py', inplace=1)
-        self.run_command('build_py')
-        install.run(self)
+import sysconfig
+import numpy
+from setuptools import setup, find_packages, Extension
+from setuptools.command.build_ext import build_ext
 
 
-class Develop(develop):
-    def install_for_development(self):
-        self.reinitialize_command('build_py', inplace=1)
-        self.run_command('build_py')
-        super(Develop, self).install_for_development()
-        self.copy_so_files()
+class CUDAExtension(Extension):
+    """This is a setuptools extension that handles building CUDA files."""
 
-    def copy_so_files(self):
-        build_command = self.get_finalized_command('build')
-        build_lib = build_command.build_lib
+    def __init__(self, name, sources, *args, **kwargs):
+        """Constructor for the CUDAExtension class."""
+        super().__init__(name, sources, *args, **kwargs)
+        self.sources = sources
 
-        root_dir = os.path.dirname(__file__)
 
-        for root, _, files in os.walk(build_lib):
-            for file in files:
-                if file.endswith('.so'):
-                    source_file = os.path.join(root, file)
-                    relative_path = os.path.relpath(root, build_lib)
-                    dest_dir = os.path.join(root_dir, relative_path)
-                    if not os.path.exists(dest_dir):
-                        os.makedirs(dest_dir)
-                    print('shutil.copy2()', source_file, dest_dir)
-                    shutil.copy2(source_file, dest_dir)
+class custom_build_ext(build_ext):
+    """Custom build extension to handle CUDA and nvcc"""
 
+    def initialize_options(self):
+        super().initialize_options()
+        self.inplace = True
+
+    def build_extensions(self):
+        """Build the CUDA extensions"""
+
+        def custom_compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
+            """This function is mainly for compiling the *.cu file
+            The cu file gets compiled in to an *.o file
+            """
+            if src.endswith(".cu"):
+                # compile the .cu CUDA file
+                self.compiler.set_executable("compiler_so", "nvcc")
+                include_dirs = self.compiler.include_dirs
+                # this is aligned with the Makefile
+                nvcc_args = ["-I" + inc for inc in include_dirs]
+                nvcc_args += [
+                    "-Xcompiler",
+                    "-fPIC",
+                    "-c",
+                    "-o",
+                    obj,
+                    src,
+                ]
+                nvcc_args += extra_postargs
+                self.compiler.spawn(["nvcc"] + nvcc_args)
+            else:
+                # default compiler
+                super_compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
+
+        self.compiler.src_extensions.append(".cu")
+        default_compiler_so = self.compiler.compiler_so
+        super_compile = self.compiler._compile
+
+        try:
+            self.compiler._compile = custom_compile
+            # python and numpy include
+            self.compiler.include_dirs.extend(
+                [numpy.get_include(), sysconfig.get_paths()["include"]]
+            )
+            build_ext.build_extensions(self)
+        finally:
+            self.compiler._compile = super_compile
+            self.compiler.compiler_so = default_compiler_so
+
+
+ext_modules = [
+    CUDAExtension(
+        name="cuda_ops.rms_norm",
+        sources=[
+            "src/rms_norm.cu",
+        ],
+        include_dirs=["/usr/local/cuda/include"],
+        library_dirs=["/usr/local/cuda/lib64"],
+        libraries=["cudart"],
+        extra_compile_args={},
+        extra_link_args=[],
+        language="c++",
+    )
+]
 
 setup(
-    name='cuda_ops',
-    version='0.1',
+    name="cuda_ops",
+    version="0.1",
     packages=find_packages(),
-    cmdclass={
-        'build_py': Build,
-        'install': Install,
-        'develop': Develop,
-    },
-    install_requires=[
-        'numpy',
-    ],
-    requires=[
-        'numpy'
-    ],
+    ext_modules=ext_modules,
+    cmdclass={"build_ext": custom_build_ext},
+    install_requires=["numpy"],
     extras_require={
-        'test': [
-            'pytest',
+        "test": [
+            "pytest",
         ]
     },
-    package_data={
-        'cuda_ops': ['*.so'],
-        'test': ['*']
-    }
+    include_package_data=True,
+    package_data={"cuda_ops": ["*.so"], "test": ["*"]},
 )
