@@ -19,6 +19,10 @@ class CUDAExtension(Extension):
 class custom_build_ext(build_ext):
     """Custom build extension to handle CUDA and nvcc"""
 
+    def initialize_options(self):
+        super().initialize_options()
+        self.inplace = True
+
     def build_extensions(self):
         """Build the CUDA extensions"""
 
