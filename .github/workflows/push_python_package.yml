@@ -33,7 +33,7 @@ jobs:
 
             - name: Compute Package version
               id: compute-version
-              uses: ./.github/workflows/compute_semantic_version.yml
+              uses: ./.github/workflows/compute_semantic_version/action.yml
               with:
                 github-token: ${{ secrets.TOKEN }}
 
