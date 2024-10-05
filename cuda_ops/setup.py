@@ -40,7 +40,6 @@ class custom_build_ext(build_ext):
                     "-fPIC",
                     "-shared",
                     "-std=c++11",
-                    "-lcudart",
                 ]
                 nvcc_args += ["-I" + inc for inc in include_dirs]
                 nvcc_args += extra_postargs
@@ -75,6 +74,7 @@ ext_modules = [
         library_dirs=["/usr/local/cuda/lib64"],
         libraries=["cudart"],
         extra_compile_args={},
+        extra_link_args=["-L/usr/local/cuda/lib64", "-lcudart"],
         language="g++",
     )
 ]
