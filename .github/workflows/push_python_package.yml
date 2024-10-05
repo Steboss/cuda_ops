@@ -1,0 +1,56 @@
+name: Push Python Package to PyPi and Dockerhub
+
+on:
+    workflow_call:
+        outputs:
+            package-base-version:
+                description: Python Package version
+                value: ${{ jobs.push-python-package.outputs.package-base-version }}
+            package-dev-version:
+                description: The Dev Python Package version
+                value: ${{ jobs.push-python-package.outputs.package-dev-version }}
+        secrets:
+            TOKEN:
+                required: true
+
+jobs:
+    push-python-package:
+        runs-on: ubuntu-latest
+        outputs:
+            package-base-version: ${{ steps.compute-version.outputs.package-base-version }}
+            package-dev-version: ${{ steps.compute-version.outputs.package-dev-version }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                ref: ${{ github.event_name == 'pull_request' && github.event.inputs.base_ref || github.ref }}
+                fetch-depth: 0
+
+            - name: Set up Python 3.10
+              uses: actions/setup-python@v4
+              with:
+                  python-version: 3.10 # TODO CREATE MULTIPLE VERSION OPTION HERE
+
+            - name: Compute Package version
+              id: compute-version
+              uses: actions/copmute_semantic_version/action.yml
+              with:
+                    github-token: ${{ secrets.TOKEN }}
+
+            - name: Set package version as output
+              run: |
+                PKG_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' pyproject.toml | head -n 1 || echo "unable-to-parse-package-name")
+                echo "PUSH_PYTHON_PACKAGE_NAME=$PKG_NAME" >> $GITHUB_ENV
+
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install setuptools wheel twine
+
+            # - name: Build and publish
+            #   run: |
+            #       python setup.py sdist bdist_wheel
+            #       python -m twine upload --repository pypi dist/*
+            #       echo "::set-output name=package-base-version::$(python setup.py --version)"
+            #       echo "::set-output name=package-dev-version::$(python setup.py --version).dev0-${GITHUB_SHA:0:7}"
