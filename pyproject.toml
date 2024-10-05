@@ -12,6 +12,17 @@ dependencies = [
   "numpy==2.1.1",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "mypy",
+  "flake8",
+  "isort",
+  "black",
+  "ruff",
+]
+
 [tool.setuptools.packages.find]
 where = ["cuda_ops"]
 

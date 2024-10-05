@@ -111,11 +111,6 @@ setup(
     use_scm_version=resolve_version(),
     ext_modules=ext_modules,
     cmdclass={"build_ext": custom_build_ext},
-    extras_require={
-        "test": [
-            "pytest",
-        ]
-    },
     include_package_data=True,
     package_data={"cuda_ops": ["*.so"], "test": ["*"]},
 )
