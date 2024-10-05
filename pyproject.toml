@@ -24,7 +24,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["cuda_ops"]
+where = ["src"]
 
 [tool.coverage.run]
 source = ["cuda_ops"]
