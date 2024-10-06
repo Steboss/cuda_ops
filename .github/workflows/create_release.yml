@@ -3,7 +3,7 @@ name: Create release for Github
 on:
     workflow_call:
         inputs:
-            package-version:
+            package-base-version:
                 description: Python Package version
                 required: true
                 type: string
@@ -27,8 +27,8 @@ jobs:
               env:
                 GITHUB_TOKEN: ${{ secrets.TOKEN }}
               with:
-                tag_name: ${{ inputs.package-version}}
-                release_name: Release ${{ inputs.package-version }}
+                tag_name: ${{ inputs.package-base-version}}
+                release_name: Release ${{ inputs.package-base-version }}
                 body: |
                   Release for ${{ github.ref }}
                 draft: false
