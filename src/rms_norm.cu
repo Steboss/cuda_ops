@@ -22,12 +22,12 @@ __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
     int row = blockIdx.x * blockDim.x + threadIdx.x;
     if (row < rows) {
         float sum = 0.0;
-        for (int i = threadIdx.y; i < cols; i+=blockdim.y) {
-            rowElements[i] = matrix[row*col+i];
+        for (int i = threadIdx.y; i < cols; i+= blockDim.y) {
+            rowElements[i] = matrix[row*cols+i];
             sum += rowElements[i] * rowElements[i];
         }
         float rms = sqrt(sum / cols);
-        for (int i = threadIdx.y; i<cols; i += blockDim.y) {
+        for (int i = threadIdx.y; i< cols; i += blockDim.y) {
             matrix[row * cols + i] = rowElements[i]/rms;
         }
     }
