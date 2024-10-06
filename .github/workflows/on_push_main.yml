@@ -31,9 +31,24 @@ jobs:
             DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
     create-release:
-        needs: build-and-push-image
-        uses: ./.github/workflows/create_release.yml
-        with:
-            package-base-version: ${{ needs.push-python-package-main.outputs.package-base-version }}
-        secrets:
-            TOKEN: ${{ secrets.TOKEN }}
+        needs: push-python-package-main
+        runs-on: ubuntu-latest
+        outputs:
+            new_tag: ${{ steps.tag-version.outputs.new_tag}}
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
+            - name: Compute new version based on semantic
+              id: tag-version
+              uses: mathieudutour/github-tag-action@v6.1
+              with:
+                custom_tag: ${{ needs.push-python-package-main.outputs.package-base-version }}
+                github_token: ${{ secrets.TOKEN }}
+            - name: Create GH Release
+              uses: ncipollo/release-action@v1
+              with:
+                tag: ${{ steps.tag-version.outputs.new_tag }}
+                name: ${{ steps.tag-version.outputs.new_tag }}
+                body: ${{ steps.tag-version.outputs.changelog }}
