@@ -24,8 +24,8 @@ jobs:
     push-python-package:
         runs-on: ubuntu-latest
         outputs:
-            package-base-version: ${{ steps.compute-version.outputs.package-base-version }}
-            package-dev-version: ${{ steps.compute-version.outputs.package-dev-version }}
+            package-base-version: ${{ steps.compute-version.outputs.base-version }}
+            package-dev-version: ${{ steps.compute-version.outputs.dev-version }}
         steps:
             - name: Checkout
               uses: actions/checkout@v3
