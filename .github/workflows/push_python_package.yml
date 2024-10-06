@@ -16,11 +16,6 @@ on:
 jobs:
     push-python-package:
         runs-on: ubuntu-latest
-        environment:
-            name: pypi
-            url: https://pypi.org/project/cuda-ops
-        permissions:
-            id-token: write
         outputs:
             package-base-version: ${{ steps.compute-version.outputs.package-base-version }}
             package-dev-version: ${{ steps.compute-version.outputs.package-dev-version }}
@@ -69,6 +64,21 @@ jobs:
             - name: Build
               run: |
                   python setup.py sdist bdist_wheel
+
+            - name: Install pypa/build
+              run: >-
+                python3 -m
+                pip install
+                build
+                --user
+
+            - name: Build a binary wheel and a source tarball
+              run: python3 -m build
+            - name: Store the distribution packages
+              uses: actions/upload-artifact@v4
+              with:
+                name: python-package-distributions
+                path: dist/
 
             - name: Publish to PyPi
               uses: pypa/gh-action-pypi-publish@v1.10.3
