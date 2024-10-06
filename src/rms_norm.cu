@@ -50,9 +50,13 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
     cudaCheckError(cudaMemcpy(d_matrix, matrix, rows * cols * sizeof(float), cudaMemcpyHostToDevice));
 
     // Launch the kernel
-    dim3 blockSize(16,16);
-    dim3 gridSize((rows + blockSize.x - 1) / blockSize.x);
+    int minGridSize, blockSize;
+    cudaCheckError(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, rmsNormalizationKernel, 0, rows * cols));
+    int gridSize = (row+ blockSize -1)/blockSize;
+    std::cout << "Optimal block size: " << blockSize << ", Grid size: " << gridSize << std::endl;
+
     rmsNormalizationKernel<<<gridSize, blockSize>>>(d_matrix, rows, cols);
+    cudaCheckError(cudaGetLastError());
     // Copy result back to host
     cudaCheckError(cudaMemcpy(matrix, d_matrix, rows * cols * sizeof(float), cudaMemcpyDeviceToHost));
 
