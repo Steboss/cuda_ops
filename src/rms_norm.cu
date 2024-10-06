@@ -18,7 +18,7 @@
 
 __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
     // shard memory for row elements
-    extern __shared__ float row_elements[];
+    extern __shared__ float rowElements[];
     int row = blockIdx.x * blockDim.x + threadIdx.x;
     if (row < rows) {
         float sum = 0.0;
