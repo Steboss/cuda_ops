@@ -42,4 +42,4 @@ jobs:
             # Run tests inside the Docker container with GPU access in case we can move the push later
             - name: Run tests inside Docker container
               run: |
-                docker run --gpus all ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ inputs.package-dev-version }} bash -c "pytest -s /opt/cuda_ops/test/test.py"
+                docker run ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ inputs.package-dev-version }} bash -c "pytest -s /opt/cuda_ops/test/test.py"
