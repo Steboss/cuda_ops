@@ -46,7 +46,7 @@ jobs:
             - name: Build and Push Docker Image
               run: |
                 docker buildx build --platform linux/amd64,linux/arm64 \
-                -t ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ env.DOCKER_TAG }} -f Dockerfile .
+                -t ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ env.DOCKER_TAG }} -f Dockerfile . --output type=docker
 
             # This step can be run only if we have a GPU runner
             # - name: Run tests inside Docker container
