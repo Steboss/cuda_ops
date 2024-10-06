@@ -19,8 +19,3 @@ pip install --upgrade pip setuptools setuptools_scm wheel numpy
 python setup.py build
 pip install -e .[test]
 EOF
-
-# run basic tests
-RUN <<EOF bash -ex
-pytest -s /opt/cuda_ops/test/test.py
-EOF

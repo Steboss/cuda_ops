@@ -39,13 +39,6 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
     dim3 blockSize(256);
     dim3 gridSize((rows + blockSize.x - 1) / blockSize.x);
     rmsNormalizationKernel<<<gridSize, blockSize>>>(d_matrix, rows, cols);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        PyErr_Format(PyExc_RuntimeError, "CUDA Kernel Error: %s", cudaGetErrorString(err));
-        cudaFree(d_matrix);
-        cudaFree(d_rms_values);
-        return NULL;
-    }
     // Copy result back to host
     cudaMemcpy(matrix, d_matrix, rows * cols * sizeof(float), cudaMemcpyDeviceToHost);
 

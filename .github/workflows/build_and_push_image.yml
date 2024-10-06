@@ -38,3 +38,8 @@ jobs:
               run: |
                 docker buildx build --platform linux/amd64,linux/arm64 \
                 -t ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ inputs.package-dev-version }} -f Dockerfile . --push
+
+            # Run tests inside the Docker container with GPU access
+            - name: Run tests inside Docker container
+              run: |
+                    docker run --gpus all cuda_ops bash -c "pytest -s /opt/cuda_ops/test/test.py"
