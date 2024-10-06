@@ -24,8 +24,8 @@ jobs:
         needs: push-python-package-main
         uses: ./.github/workflows/build_and_push_image.yml
         with:
-            package-base-version: ${{ needs.push-python-package.outputs.package-base-version }}
-            package-dev-version: ${{ needs.push-python-package.outputs.package-dev-version }}
+            package-base-version: ${{ needs.push-python-package-main.outputs.package-base-version }}
+            package-dev-version: ${{ needs.push-python-package-main.outputs.package-dev-version }}
         secrets:
             DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
             DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
