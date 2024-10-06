@@ -34,12 +34,25 @@ jobs:
             - name: Login to DockerHub
               run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
+            - name: Set Docker Tag
+              id: set-tag
+              run: |
+                if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+                    echo "DOCKER_TAG=${{ inputs.package-base-version }}" >> $GITHUB_ENV
+                else
+                    echo "DOCKER_TAG=${{ inputs.package-dev-version }}" >> $GITHUB_ENV
+                fi
+
             - name: Build and Push Docker Image
               run: |
                 docker buildx build --platform linux/amd64,linux/arm64 \
-                -t ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ inputs.package-dev-version }} -f Dockerfile . --push
+                -t ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ env.DOCKER_TAG }} -f Dockerfile .
 
-            # Run tests inside the Docker container with GPU access in case we can move the push later
-            - name: Run tests inside Docker container
+            # This step can be run only if we have a GPU runner
+            # - name: Run tests inside Docker container
+            #   run: |
+            #     docker run ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ env.DOCKER_TAG }} bash -c "pytest -s /opt/cuda_ops/test/test.py"
+
+            - name: Push Image
               run: |
-                docker run ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ inputs.package-dev-version }} bash -c "pytest -s /opt/cuda_ops/test/test.py"
+                docker push ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ env.DOCKER_TAG }}

@@ -41,3 +41,15 @@ def test_rms_norm_with_known_input():
     rms_norm(m)
 
     assert np.allclose(m, expected_rms_norm, atol=1e-6)
+
+
+def test_rms_norm_with_zero_matrix():
+    """This is a test with a zero matrix"""
+    m = np.zeros((2, 2), dtype=np.float32)
+
+    try:
+        rms_norm(m)
+    except ZeroDivisionError:
+        pass
+    else:
+        assert np.allclose(m, np.zeros_like(m))

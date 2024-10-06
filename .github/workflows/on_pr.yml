@@ -12,7 +12,7 @@ permissions:
 
 jobs:
 
-  push-python-package:
+  push-python-package-pr:
     uses: ./.github/workflows/push_python_package.yml
     secrets:
       PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -20,7 +20,7 @@ jobs:
       TOKEN: ${{ secrets.TOKEN }}
 
   build-and-push-image:
-    needs: push-python-package
+    needs: push-python-package-pr
     uses: ./.github/workflows/build_and_push_image.yml
     with:
       package-base-version: ${{ needs.push-python-package.outputs.package-base-version }}

@@ -1,0 +1,31 @@
+---
+name: On push to main branch
+
+on:
+    push:
+    branches:
+        - 'main'
+
+permissions:
+    id-token: write
+    contents: write
+
+jobs:
+
+    push-python-package-main:
+        uses: ./.github/workflows/push_python_package.yml
+        secrets:
+            PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+            PYPI: ${{ secrets.PYPI }}
+            TOKEN: ${{ secrets.TOKEN }}
+
+
+    build-and-push-image:
+        needs: push-python-package-main
+        uses: ./.github/workflows/build_and_push_image.yml
+        with:
+            package-base-version: ${{ needs.push-python-package.outputs.package-base-version }}
+            package-dev-version: ${{ needs.push-python-package.outputs.package-dev-version }}
+        secrets:
+            DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+            DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
