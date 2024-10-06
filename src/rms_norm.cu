@@ -24,8 +24,15 @@ __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
             sum += matrix[row*cols+i]*matrix[row*cols+i];
         }
         float rms = sqrt(sum / cols);
-        for (int i = 0; i < cols; ++i) {
-            matrix[row * cols + i] /= rms;
+        // check division by 0
+        if (rms > 0.0f){
+            for (int i = 0; i < cols; ++i) {
+                matrix[row * cols + i] /= rms;
+            }
+        } else {
+            for (int i = 0; i < cols; ++i) {
+                matrix[row * cols + i] = 0.0f;
+            }
         }
     }
 }
