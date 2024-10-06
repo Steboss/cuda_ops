@@ -22,6 +22,7 @@ pip install -e .[test]
 EOF
 
 # run basic tests
-# RUN <<EOF bash -ex
-# pytest /opt/cuda_ops/test/test.py
-# EOF
+RUN <<EOF bash -ex
+ls -l /opt/cuda_ops/*
+pytest /opt/cuda_ops/test/test.py
+EOF
