@@ -2,11 +2,6 @@ name: Push Python Package to PyPi and Dockerhub
 
 on:
     workflow_call:
-        inputs:
-            pypi-username:
-                type: string
-            pypi-password:
-                type: string
         outputs:
             package-base-version:
                 description: Python Package version
@@ -16,6 +11,10 @@ on:
                 value: ${{ jobs.push-python-package.outputs.package-dev-version }}
         secrets:
             TOKEN:
+                required: true
+            PYPI_USERNAME:
+                required: true
+            PYPI:
                 required: true
 
 permissions:
@@ -82,5 +81,5 @@ jobs:
             - name: Publish package to PyPI
               uses: pypa/gh-action-pypi-publish@v1.10.3
               with:
-                    username: ${{ github.event.inputs.pypi-username }}
-                    password: ${{ github.event.inputs.pypi-password }}
+                    username: ${{ secrets.pypi-username }}
+                    password: ${{ secrets.pypi-password }}
