@@ -8,8 +8,8 @@
 #include <numpy/arrayobject.h>
 
 // Define a macro for checking CUDA errors
-#define cudaCheckError() {                                          \
-    cudaError_t e=cudaGetLastError();                                \
+#define cudaCheckError(call) {                                          \
+    cudaError_t e=call;                                \
     if(e!=cudaSuccess) {                                             \
         printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e));           \
         exit(0);                                                    \
