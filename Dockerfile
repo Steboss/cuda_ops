@@ -6,19 +6,16 @@ RUN <<EOF
 export DEBIAN_FRONTEND=noninteractive
 export TZ=America/Los_Angeles
 apt-get update
-apt-get install -y python-is-python3 python3-pip
+apt-get install -y python-is-python3 python3-pip git
 EOF
 
+RUN pip install --upgrade pip setuptools
 # build and install the package
 WORKDIR /opt/cuda_ops
-COPY cuda_ops .
-COPY src .
-COPY test .
-COPY pyproject.toml .
-COPY setup.py .
+COPY . .
 
 RUN <<EOF bash -ex
-pushd /opt/cuda_ops
+pip install --upgrade pip setuptools setuptools_scm wheel
 pip install -e .[test]
 python setup.py build
 EOF
