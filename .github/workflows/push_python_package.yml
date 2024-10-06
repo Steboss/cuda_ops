@@ -2,6 +2,11 @@ name: Push Python Package to PyPi and Dockerhub
 
 on:
     workflow_call:
+        inputs:
+            pypi-username:
+                type: string
+            pypi-password:
+                type: string
         outputs:
             package-base-version:
                 description: Python Package version
@@ -12,6 +17,9 @@ on:
         secrets:
             TOKEN:
                 required: true
+
+permissions:
+    contents: write
 
 jobs:
     push-python-package:
@@ -48,39 +56,31 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install setuptools wheel twine
 
-            - name: Install Cuda Toolkit
-              id: cuda-toolkit
-              uses: Jimver/cuda-toolkit@v0.2.17
+            # - name: Install Cuda Toolkit
+            #   id: cuda-toolkit
+            #   uses: Jimver/cuda-toolkit@v0.2.17
 
-            - run: |
-                echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
+            # - run: |
+            #     echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
 
-            - run: |
-                echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
+            # - run: |
+            #     echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
 
-            - run: |
-                nvcc -V
+            # - run: |
+            #     nvcc -V
 
-            - name: Build
+            - name: Build distribution package
               run: |
                   python setup.py sdist bdist_wheel
 
-            - name: Install pypa/build
-              run: >-
-                python3 -m
-                pip install
-                build
-                --user
-
-            - name: Build a binary wheel and a source tarball
-              run: python3 -m build
-            - name: Store the distribution packages
+            - name: Store distribution artifacts
               uses: actions/upload-artifact@v4
               with:
-                name: python-package-distributions
+                name: dist-packages
                 path: dist/
 
-            - name: Publish to PyPi
+            - name: Publish package to PyPI
               uses: pypa/gh-action-pypi-publish@v1.10.3
               with:
-                password: ${{ secrets.PYPI }}
+                    username: ${{ github.event.inputs.pypi-username }}
+                    password: ${{ github.event.inputs.pypi-password }}

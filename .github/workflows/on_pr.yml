@@ -15,4 +15,6 @@ jobs:
   python-lint-and-test-pr:
     uses: ./.github/workflows/push_python_package.yml
     secrets:
+      pypi-username: ${{ secrets.PYPI_USERNAME }}
+      pypi-password: ${{ secrets.PYPI_PASSWORD }}
       TOKEN: ${{ secrets.TOKEN }}
