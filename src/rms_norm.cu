@@ -1,20 +1,34 @@
 #include <cmath>
 #include <Python.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <iostream>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+// Define a macro for checking CUDA errors
+#define cudaCheckError() {                                          \
+    cudaError_t e=cudaGetLastError();                                \
+    if(e!=cudaSuccess) {                                             \
+        printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e));           \
+        exit(0);                                                    \
+    }                                                               \
+}
 
 __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
+    // shard memory for row elements
+    extern __shared__ float row_elements[];
     int row = blockIdx.x * blockDim.x + threadIdx.x;
     if (row < rows) {
         float sum = 0.0;
-        for (int i = 0; i < cols; ++i) {
-            sum += matrix[row * cols + i] * matrix[row * cols + i];
+        for (int i = threadIdx.y; i < cols; i+=blockdim.y) {
+            rowElements[i] = matrix[row*col+i];
+            sum += rowElements[i] * rowElements[i];
         }
         float rms = sqrt(sum / cols);
-        for (int i = 0; i < cols; ++i) {
-            matrix[row * cols + i] /= rms;
+        for (int i = threadIdx.y; i<cols; i += blockDim.y) {
+            matrix[row * cols + i] = rowElements[i]/rms;
         }
     }
 }
@@ -32,17 +46,17 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
 
     // Allocate GPU memory and copy data
     float *d_matrix;
-    cudaMalloc(&d_matrix, rows * cols * sizeof(float));
-    cudaMemcpy(d_matrix, matrix, rows * cols * sizeof(float), cudaMemcpyHostToDevice);
+    cudaCheckError(cudaMalloc(&d_matrix, rows * cols * sizeof(float)));
+    cudaCheckError(cudaMemcpy(d_matrix, matrix, rows * cols * sizeof(float), cudaMemcpyHostToDevice));
 
     // Launch the kernel
-    dim3 blockSize(256);
+    dim3 blockSize(16,16);
     dim3 gridSize((rows + blockSize.x - 1) / blockSize.x);
     rmsNormalizationKernel<<<gridSize, blockSize>>>(d_matrix, rows, cols);
     // Copy result back to host
-    cudaMemcpy(matrix, d_matrix, rows * cols * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaCheckError(cudaMemcpy(matrix, d_matrix, rows * cols * sizeof(float), cudaMemcpyDeviceToHost));
 
-    cudaFree(d_matrix);
+    cudaCheckError(cudaFree(d_matrix));
     Py_RETURN_NONE;
 }
 
