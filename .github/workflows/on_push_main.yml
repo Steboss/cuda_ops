@@ -33,3 +33,5 @@ jobs:
     create-release:
         needs: build-and-push-image
         uses: ./.github/workflows/create_release.yml
+        with:
+            package-base-version: ${{ needs.push-python-package-main.outputs.package-base-version }}
