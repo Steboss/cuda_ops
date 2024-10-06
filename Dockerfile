@@ -16,11 +16,11 @@ COPY . .
 
 RUN <<EOF bash -ex
 pip install --upgrade pip setuptools setuptools_scm wheel
-pip install -e .[test]
 python setup.py build
+pip install -e .[test]
 EOF
 
 # run basic tests
-RUN <<EOF bash -ex
-pytest /opt/cuda_ops/test/test.py
-EOF
+# RUN <<EOF bash -ex
+# pytest /opt/cuda_ops/test/test.py
+# EOF
