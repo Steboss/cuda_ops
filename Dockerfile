@@ -11,11 +11,11 @@ EOF
 
 # build and install the package
 WORKDIR /opt/cuda_ops
-ADD cuda_ops $WORKDIR/cuda_ops
-ADD src $WORKDIR/src
-ADD test $WORKDIR/test
-ADD pyproject.toml $WORKDIR/pyproject.toml
-ADD setup.py $WORKDIR/setup.py
+COPY cuda_ops .
+COPY src .
+COPY test .
+COPY pyproject.toml .
+COPY setup.py .
 
 RUN <<EOF bash -ex
 pushd /opt/cuda_ops
