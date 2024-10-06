@@ -32,7 +32,6 @@ def test_rms_norm(n):
     assert np.allclose(result_cpu, result_gpu)
 
 
-@pytest
 def test_rms_norm_with_known_input():
     """This is a test with a known input"""
     m = np.array([[3.0, 4.0]], dtype=np.float32)

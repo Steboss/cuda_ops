@@ -23,8 +23,5 @@ EOF
 
 # run basic tests
 RUN <<EOF bash -ex
-ls -l /opt/cuda_ops/*
-python --version
-python3 --version
-pytest /opt/cuda_ops/test/test.py
+pytest -s /opt/cuda_ops/test/test.py
 EOF
