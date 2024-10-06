@@ -35,3 +35,5 @@ jobs:
         uses: ./.github/workflows/create_release.yml
         with:
             package-version: ${{ needs.push-python-package-main.outputs.package-base-version }}
+        secrets:
+            TOKEN: ${{ secrets.TOKEN }}
