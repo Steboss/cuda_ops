@@ -10,7 +10,12 @@ apt-get install -y python-is-python3 python3-pip
 EOF
 
 # build and install the package
-ADD cuda_ops /opt/cuda_ops
+WORKDIR /opt/cuda_ops
+ADD cuda_ops $WORKDIR/cuda_ops
+ADD src $WORKDIR/src
+ADD test $WORKDIR/test
+ADD pyproject.toml $WORKDIR/pyproject.toml
+ADD setup.py $WORKDIR/setup.py
 
 RUN <<EOF bash -ex
 pushd /opt/cuda_ops
