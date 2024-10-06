@@ -52,7 +52,7 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
     // Launch the kernel
     int minGridSize, blockSize;
     cudaCheckError(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, rmsNormalizationKernel, 0, rows * cols));
-    int gridSize = (row+ blockSize -1)/blockSize;
+    int gridSize = (rows + blockSize -1)/blockSize;
     std::cout << "Optimal block size: " << blockSize << ", Grid size: " << gridSize << std::endl;
 
     rmsNormalizationKernel<<<gridSize, blockSize>>>(d_matrix, rows, cols);
