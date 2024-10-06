@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import os
 import sysconfig
+
 import numpy
-from setuptools import setup, find_packages, Extension
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+from setuptools_scm import ScmVersion
 
 
 class CUDAExtension(Extension):
@@ -16,7 +18,7 @@ class CUDAExtension(Extension):
         self.sources = sources
 
 
-class custom_build_ext(build_ext):
+class custom_build_ext(build_ext):  # noqa N801
     """Custom build extension to handle CUDA and nvcc"""
 
     def initialize_options(self):
@@ -57,13 +59,37 @@ class custom_build_ext(build_ext):
         try:
             self.compiler._compile = custom_compile
             # python and numpy include
-            self.compiler.include_dirs.extend(
-                [numpy.get_include(), sysconfig.get_paths()["include"]]
-            )
+            self.compiler.include_dirs.extend([numpy.get_include(), sysconfig.get_paths()["include"]])
             build_ext.build_extensions(self)
         finally:
             self.compiler._compile = super_compile
             self.compiler.compiler_so = default_compiler_so
+
+
+def resolve_version():
+    """This function retrieves the correct version for the package
+
+    The function checks the env variables to retrieve info about the
+    state.
+    If we are on PR we will use the default versioning scheme.
+    If we are merging on main, then we will have a STABLE RELEASE variable
+    set to 1. This avoid to add the local version to the version number.
+    """
+
+    def my_release_branch_semver_version(version: ScmVersion):
+        if os.getenv("STABLE_RELEASE"):
+            return os.getenv("BASE_VERSION")
+
+        if os.getenv("DEV_VERSION"):
+            return os.getenv("DEV_VERSION")
+
+        return version.format_with("{tag}.dev0")
+
+    version_dictionary = {"version_scheme": my_release_branch_semver_version}
+    if os.getenv("STABLE_RELEASE") or os.getenv("DEV_VERSION"):
+        version_dictionary["local_scheme"] = "no-local-version"
+
+    return version_dictionary
 
 
 ext_modules = [
@@ -82,17 +108,9 @@ ext_modules = [
 ]
 
 setup(
-    name="cuda_ops",
-    version="0.1",
-    packages=find_packages(),
+    use_scm_version=resolve_version(),
     ext_modules=ext_modules,
     cmdclass={"build_ext": custom_build_ext},
-    install_requires=["numpy"],
-    extras_require={
-        "test": [
-            "pytest",
-        ]
-    },
     include_package_data=True,
     package_data={"cuda_ops": ["*.so"], "test": ["*"]},
 )

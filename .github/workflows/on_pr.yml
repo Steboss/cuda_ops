@@ -1,0 +1,30 @@
+---
+name: On PR
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+jobs:
+
+  push-python-package-pr:
+    uses: ./.github/workflows/push_python_package.yml
+    secrets:
+      PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+      PYPI: ${{ secrets.PYPI }}
+      TOKEN: ${{ secrets.TOKEN }}
+
+  build-and-push-image:
+    needs: push-python-package-pr
+    uses: ./.github/workflows/build_and_push_image.yml
+    with:
+      package-base-version: ${{ needs.push-python-package-pr.outputs.package-base-version }}
+      package-dev-version: ${{ needs.push-python-package-pr.outputs.package-dev-version }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

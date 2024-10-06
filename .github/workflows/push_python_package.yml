@@ -1,0 +1,83 @@
+name: Push Python Package to PyPi and Dockerhub
+
+on:
+    workflow_call:
+        outputs:
+            package-base-version:
+                description: Python Package version
+                value: ${{ jobs.push-python-package.outputs.package-base-version }}
+            package-dev-version:
+                description: The Dev Python Package version
+                value: ${{ jobs.push-python-package.outputs.package-dev-version }}
+        secrets:
+            TOKEN:
+                required: true
+            PYPI_USERNAME:
+                required: true
+            PYPI:
+                required: true
+
+permissions:
+    contents: write
+
+jobs:
+    push-python-package:
+        runs-on: ubuntu-latest
+        outputs:
+            package-base-version: ${{ steps.compute-version.outputs.base-version }}
+            package-dev-version: ${{ steps.compute-version.outputs.dev-version }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                ref: ${{ github.event_name == 'pull_request' && github.event.inputs.base_ref || github.ref }}
+                fetch-depth: 0
+
+            - name: Set up Python 3.10
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.10" # TODO CREATE MULTIPLE VERSION OPTION HERE
+
+            - name: Compute Package version
+              id: compute-version
+              uses: ./.github/workflows/compute_semantic_version
+              with:
+                github-token: ${{ secrets.TOKEN }}
+
+            - name: Set package version as output
+              run: |
+                PKG_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' pyproject.toml | head -n 1 || echo "unable-to-parse-package-name")
+                echo "PUSH_PYTHON_PACKAGE_NAME=$PKG_NAME" >> $GITHUB_ENV
+
+
+            # uncomment below for pushing to pypi + ADD condition if on main
+            # - name: Install dependencies
+            #   if: ${{ github.ref != 'refs/heads/main' }}
+            #   run: |
+            #       python -m pip install --upgrade pip
+            #       pip install setuptools wheel twine numpy setuptools_scm
+
+            # - name: Install Cuda Toolkit
+            #   id: cuda-toolkit
+            #   if: ${{ github.ref != 'refs/heads/main' }}
+            #   uses: Jimver/cuda-toolkit@v0.2.17
+
+
+            # - name: Build distribution package
+            #   if: ${{ github.ref != 'refs/heads/main' }}
+            #   run: |
+            #       python setup.py sdist bdist_wheel
+
+            # - name: Store distribution artifacts
+            #   if: ${{ github.ref != 'refs/heads/main' }}
+            #   uses: actions/upload-artifact@v4
+            #   with:
+            #     name: dist-packages
+            #     path: dist/
+
+            # - name: Publish package to PyPI
+            #   if: ${{ github.ref != 'refs/heads/main' }}
+            #   uses: pypa/gh-action-pypi-publish@v1.10.3
+            #   with:
+            #         username: ${{ secrets.PYPI_USERNAME }}
+            #         password: ${{ secrets.PYPI }}

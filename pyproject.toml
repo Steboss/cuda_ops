@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=61", "setuptools-scm", "wheel", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cuda_ops"
+dynamic = ["version"]
+authors = [{ name = "Stefano Bosisio" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy==2.1.1",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+  ]
+
+dev = [
+  "pytest",
+  "pytest-cov",
+  "mypy",
+  "flake8",
+  "isort",
+  "black",
+  "ruff",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.coverage.run]
+source = ["cuda_ops"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+exclude = [
+  ".git",
+  ".hg",
+  ".mypy_cache",
+  ".idea",
+  ".vscode",
+  "__pycache__",
+  ".pytest_cache",
+  "build",
+  "dist",
+]
+line-length = 120
+lint.select = [
+  "E", # pycodestyle
+  "F", # pyFlakes
+  "I", # isort
+  "N", # pep8-naming
+  "W", # Warning
+]
+
+lint.fixable = ["E", "F", "I", "N", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-local-folder = ["cuda_ops"]

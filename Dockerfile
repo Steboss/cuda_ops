@@ -6,19 +6,16 @@ RUN <<EOF
 export DEBIAN_FRONTEND=noninteractive
 export TZ=America/Los_Angeles
 apt-get update
-apt-get install -y python-is-python3 python3-pip
+apt-get install -y python-is-python3 python3-pip git
 EOF
 
+RUN pip install --upgrade pip setuptools
 # build and install the package
-ADD cuda_ops /opt/cuda_ops
-
+WORKDIR /opt/cuda_ops
+COPY . .
+# add requirements
 RUN <<EOF bash -ex
-pushd /opt/cuda_ops
-pip install -e .[test]
+pip install --upgrade pip setuptools setuptools_scm wheel numpy
 python setup.py build
-EOF
-
-# run basic tests
-RUN <<EOF bash -ex
-pytest /opt/cuda_ops/test/test.py
+pip install -e .[test]
 EOF

@@ -39,7 +39,6 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
     dim3 blockSize(256);
     dim3 gridSize((rows + blockSize.x - 1) / blockSize.x);
     rmsNormalizationKernel<<<gridSize, blockSize>>>(d_matrix, rows, cols);
-
     // Copy result back to host
     cudaMemcpy(matrix, d_matrix, rows * cols * sizeof(float), cudaMemcpyDeviceToHost);
 
