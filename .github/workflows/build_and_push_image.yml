@@ -4,8 +4,12 @@ on:
     workflow_call:
         inputs:
             package-base-version:
+                description: Python Package version
+                default: ""
                 type: string
             package-dev-version:
+                description: The Dev Python Package version
+                default: ""
                 type: string
         secrets:
             DOCKERHUB_USERNAME:
@@ -32,4 +36,4 @@ jobs:
 
             - name: Build and Push Docker Image
               run: |
-                docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKERHUB_USERNAME }}/cuda_ops:${{ github.event.inputs.package-base-version }} -t ${{ secrets.DOCKERHUB_USERNAME }}/cuda_ops:${{ github.event.inputs.package-dev-version }} --push .
+                docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKERHUB_USERNAME }}/cuda_ops:${{ inputs.package-base-version }} -t ${{ secrets.DOCKERHUB_USERNAME }}/cuda_ops:${{ inputs.package-dev-version }} --push .
