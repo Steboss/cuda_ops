@@ -50,10 +50,11 @@ jobs:
                 echo "PUSH_PYTHON_PACKAGE_NAME=$PKG_NAME" >> $GITHUB_ENV
 
 
-            - name: Install dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install setuptools wheel twine numpy setuptools_scm
+            # uncomment below for pushing to pypi + ADD condition if on main
+            # - name: Install dependencies
+            #   run: |
+            #       python -m pip install --upgrade pip
+            #       pip install setuptools wheel twine numpy setuptools_scm
 
             # - name: Install Cuda Toolkit
             #   id: cuda-toolkit
@@ -68,18 +69,18 @@ jobs:
             # - run: |
             #     nvcc -V
 
-            - name: Build distribution package
-              run: |
-                  python setup.py sdist bdist_wheel
+            # - name: Build distribution package
+            #   run: |
+            #       python setup.py sdist bdist_wheel
 
-            - name: Store distribution artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                name: dist-packages
-                path: dist/
+            # - name: Store distribution artifacts
+            #   uses: actions/upload-artifact@v4
+            #   with:
+            #     name: dist-packages
+            #     path: dist/
 
-            - name: Publish package to PyPI
-              uses: pypa/gh-action-pypi-publish@v1.10.3
-              with:
-                    username: ${{ secrets.PYPI_USERNAME }}
-                    password: ${{ secrets.PYPI }}
+            # - name: Publish package to PyPI
+            #   uses: pypa/gh-action-pypi-publish@v1.10.3
+            #   with:
+            #         username: ${{ secrets.PYPI_USERNAME }}
+            #         password: ${{ secrets.PYPI }}

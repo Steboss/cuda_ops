@@ -8,7 +8,9 @@ from cuda_ops import rms_norm
 
 @pytest.mark.parametrize("n", [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
 def test_rms_norm(n):
-    m = np.random.randn(n, n)
+    # we need to convert to np.float32 to align with CUDA
+    # standard NumPy uses float64
+    m = np.random.randn(n, n).astype(np.float32)
 
     result_gpu = m.copy()
     rms_norm(result_gpu)  # in-place update
