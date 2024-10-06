@@ -16,5 +16,5 @@ jobs:
     uses: ./.github/workflows/push_python_package.yml
     secrets:
       pypi-username: ${{ secrets.PYPI_USERNAME }}
-      pypi-password: ${{ secrets.PYPI_PASSWORD }}
+      pypi-password: ${{ secrets.PYPI }}
       TOKEN: ${{ secrets.TOKEN }}
