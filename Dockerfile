@@ -14,8 +14,9 @@ RUN pip install --upgrade pip setuptools
 WORKDIR /opt/cuda_ops
 COPY . .
 
+# add requirements
 RUN <<EOF bash -ex
-pip install --upgrade pip setuptools setuptools_scm wheel
+pip install --upgrade pip setuptools setuptools_scm wheel numpy
 python setup.py build
 pip install -e .[test]
 EOF
