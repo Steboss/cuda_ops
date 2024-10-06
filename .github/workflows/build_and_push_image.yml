@@ -46,13 +46,13 @@ jobs:
             - name: Build and Push Docker Image
               run: |
                 docker buildx build --platform linux/amd64,linux/arm64 \
-                -t ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ env.DOCKER_TAG }} -f Dockerfile .
+                -t ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ steps.set-tag.outputs.DOCEKR_TAG }} -f Dockerfile .
 
             # This step can be run only if we have a GPU runner
             # - name: Run tests inside Docker container
             #   run: |
-            #     docker run ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ env.DOCKER_TAG }} bash -c "pytest -s /opt/cuda_ops/test/test.py"
+            #     docker run ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ steps.set-tag.outputs.DOCEKR_TAG }} bash -c "pytest -s /opt/cuda_ops/test/test.py"
 
             - name: Push Image
               run: |
-                docker push ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ env.DOCKER_TAG }}
+                docker push ${{ secrets.DOCKERHUB_USERNAME}}/cuda_ops:${{ steps.set-tag.outputs.DOCEKR_TAG }}
