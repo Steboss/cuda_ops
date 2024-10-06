@@ -17,18 +17,15 @@
 }
 
 __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
-    // shard memory for row elements
-    extern __shared__ float rowElements[];
     int row = blockIdx.x * blockDim.x + threadIdx.x;
     if (row < rows) {
         float sum = 0.0;
-        for (int i = threadIdx.y; i < cols; i+= blockDim.y) {
-            rowElements[i] = matrix[row*cols+i];
-            sum += rowElements[i] * rowElements[i];
+        for (int i = 0; i < cols; ++i) {
+            sum += matrix[row*cols+i]*matrix[row*cols+i];
         }
         float rms = sqrt(sum / cols);
-        for (int i = threadIdx.y; i< cols; i += blockDim.y) {
-            matrix[row * cols + i] = rowElements[i]/rms;
+        for (int i = 0; i < cols; ++i) {
+            matrix[row * cols + i] /= rms;
         }
     }
 }
@@ -37,6 +34,7 @@ __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
 static PyObject* rms_norm(PyObject* self, PyObject* args) {
     PyArrayObject *input_matrix;
     if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &input_matrix)) {
+        PyErr_SetString(PyExc_TypeError, "Parameter must be a NumPy array.");
         return NULL;
     }
 
