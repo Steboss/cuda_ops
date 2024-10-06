@@ -81,5 +81,5 @@ jobs:
             - name: Publish package to PyPI
               uses: pypa/gh-action-pypi-publish@v1.10.3
               with:
-                    username: ${{ secrets.pypi-username }}
-                    password: ${{ secrets.pypi-password }}
+                    username: ${{ secrets.PYPI_USERNAME }}
+                    password: ${{ secrets.PYPI }}
