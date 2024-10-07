@@ -72,7 +72,7 @@ def test_rms_norm_small_values():
 def test_rms_norm_high_range():
     """This is a test where the matrix values are ranging from 10^-20 to 10^20"""
     exponents = np.linspace(-20, 20, 10)
-    values = np.power(10, exponents).astype(np.float32)
+    values = np.power(10, exponents)
     m = np.tile(values, (10, 1))
     result_gpu = m.copy()
     rms_norm_execute.compute(result_gpu)
