@@ -22,7 +22,7 @@ python setup.py build
 ```
 
 
-### Development best practices
+## Development best practices
 
 For the development of the code, I suggest you to create a virutal environment, like the `conda` env above, and install pre-commit:
 ```
@@ -37,16 +37,16 @@ This will automatically run sanity checks before pushing the code to GitHub
 Once the installation has finished you can use the code as:
 ```
 import numpy as np
-from cuda_ops import rms_norm
+from cuda_ops import rms_norm_execute
 
 m = np.random.randn(2,2)
-rms_norm(m)
+rms_norm_execute.compute(m)
 ```
 
 Pulling and testing Docker image from [DockerHub](https://hub.docker.com/repository/docker/sbsynth/cuda_ops/general):
 ```
-docker pull sbsynth/cuda_ops:0.0.2
-docker run -it sbsynth/cuda_ops:0.0.2 bash
+docker pull sbsynth/cuda_ops:0.0.3
+docker run -it sbsynth/cuda_ops:0.0.3 bash
 ```
 
 # General process to explain what's been built
@@ -102,4 +102,5 @@ The improvements that I brought in the CUDA space are mainly:
 - Error handling, defining a macro that returns an output in case of errors from CUDA
 - Create a way to handle double and single precision
 - Implement way to use cuda stream to allow async and better usage of memory. In particular using `cudaMemcpy` may be a blocker for large matrices processing, so that CPU has to wait the entire data to transfer, before moving to the next step. The idea, is to allocate the GPU memroy once and re-using it for all the subsequent operations, avoiding to call multiple times `cudaMalloc` and `cudaFree`. We should prefer asynchrnous transfers with the CPU, to allow the CPU to execute other downstream operations.
-- Further work should be done shared memory front.
+
+Future work should involve acting on the shared memory front, to further optimize how the matrices are handled on the GPU itself.
