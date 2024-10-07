@@ -12,10 +12,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.parametrize(
     "n",
-    [
-        1,
-        2,
-    ],
+    [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024],
 )
 def test_rms_norm(n):
     # we need to convert to np.float32 to align with CUDA

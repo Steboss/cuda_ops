@@ -7,6 +7,10 @@ on:
                 description: Python Package version
                 required: true
                 type: string
+        outputs:
+            new-tag:
+                description: The new tag for the release
+                value: ${{ jobs.create-release.outputs.new_tag }}
         secrets:
             TOKEN:
                 required: true
@@ -17,19 +21,22 @@ on:
 jobs:
     create-release:
         runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v3
+        outputs:
+            new_tag: ${{ steps.tag-version.outputs.new_tag}}
 
-            - name: Create GH Release
-              id: create-release
-              uses: actions/create-release@v1
-              env:
-                GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        steps:
+            - uses: actions/checkout@v4
               with:
-                tag_name: ${{ inputs.package-base-version}}
-                release_name: Release ${{ inputs.package-base-version }}
-                body: |
-                  Release for ${{ github.ref }}
-                draft: false
-                prerelease: false
+                fetch-depth: 0
+            - name: Compute new version based on semantic
+              id: tag-version
+              uses: mathieudutour/github-tag-action@v6.1
+              with:
+                custom_tag: ${{ inputs.package-base-version }}
+                github_token: ${{ secrets.TOKEN }}
+            - name: Create GH Release
+              uses: ncipollo/release-action@v1
+              with:
+                tag: ${{ steps.tag-version.outputs.new_tag }}
+                name: ${{ steps.tag-version.outputs.new_tag }}
+                body: ${{ steps.tag-version.outputs.changelog }}
