@@ -25,29 +25,31 @@ __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
 
     // use each thread to compute the square of each element
     float val = 0.0f;
-    if (tid < cols) {
-        val = matrix[idx] * matrix[idx];
+    for(int i = tid; i < cols; i += blockDim.x) {
+        flot element = matrix[idx+i];
+        sum += element*element;
     }
-    sdata[tid] = val;
+    sdata[tid] = sum;
     __syncthreads();
 
     // sum up the squares
     for(unsigned int s = blockDim.x/2; s>0; s>>=1){
-        if(tid < s && (tid+s) < cols){
+        if(tid < s){
             sdata[tid] += sdata[tid + s];
         }
         __syncthreads();
     }
     if (tid==0){
-        float sum = sdata[0];
-        float rms = sqrt(sum / cols);
+        float total_sum = sdata[0];
+        flaot rms = sqrtf(total_sum/cols);
         sdata[0] = rms > 0.0f? rms: 1.0f;
     }
     __syncthreads();
 
     // normalize
-    if (tid < cols){
-        matrix[idx] /= sdata[0];
+    float rms = sdata[0];
+    for (int i = tid; i < cols; i += blockDim.x) {
+        matrix[idx+i] /= rms;
     }
 }
 
