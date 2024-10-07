@@ -6,7 +6,7 @@ WORKDIR /opt/cuda_ops
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git python3-pip python3-dev \
-        python-is-pyhton3 && \
+        python-is-python3 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . .
