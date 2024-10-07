@@ -24,7 +24,7 @@ __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
     int idx = row * cols + tid;
 
     // use each thread to compute the square of each element
-    float val = 0.0f;
+    float sum = 0.0f;
     for(int i = tid; i < cols; i += blockDim.x) {
         float element = matrix[idx+i];
         sum += element*element;
