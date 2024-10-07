@@ -12,6 +12,7 @@ RUN apt-get update && \
 COPY . .
 
 RUN pip install --no-cache-dir --upgrade pip setuptools setuptools_scm wheel numpy
+RUN pip install -r requirements.txt
 RUN pip install -e .[test]
 RUN python setup.py build
 
