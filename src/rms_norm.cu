@@ -48,6 +48,20 @@ void launchRmsNorm(T *matrix, int rows, int cols){
 }
 
 
+template <typename T>
+void handleRmsNorm(T *matrix, int rows, int cols){
+    T *d_matrix;
+    cudaStream_t stream;
+    cudaCheckError(cudaStreamCreate(&stream));
+    cudaCheckError(cudaMalloc((void**)&d_matrix, rows * cols * sizeof(T)));
+    cudaCheckError(cudaMemcpyAsync(d_matrix, matrix, rows * cols * sizeof(T), cudaMemcpyHostToDevice, stream));
+    launchRmsNorm<T>(d_matrix, rows, cols);
+    cudaCheckError(cudaMemcpyAsync(matrix, d_matrix, rows * cols * sizeof(T), cudaMemcpyDeviceToHost, stream));
+    cudaCheckError(cudaStreamSynchronize(stream));
+    cudaCheckError(cudaFree(d_matrix));
+    cudaCheckError(cudaStreamDestroy(stream));
+}
+
 static PyObject* rms_norm(PyObject* self, PyObject* args) {
     PyArrayObject *input_matrix;
     if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &input_matrix)) {
@@ -61,21 +75,11 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
 
     if (dtype == NPY_FLOAT){
         float *matrix = static_cast<float*>(PyArray_DATA(input_matrix));
-        float *d_matrix;
-        cudaCheckError(cudaMalloc(&d_matrix, rows * cols * sizeof(float)));
-        cudaCheckError(cudaMemcpy(d_matrix, matrix, rows * cols * sizeof(float), cudaMemcpyHostToDevice));
-        launchRmsNorm<float>(d_matrix, rows, cols);
-        cudaCheckError(cudaMemcpy(matrix, d_matrix, rows * cols * sizeof(float), cudaMemcpyDeviceToHost));
-        cudaCheckError(cudaFree(d_matrix));
+        handleRmsNorm<float>(matrix, rows, cols);
     }
     else if (dtype == NPY_DOUBLE){
         double *matrix = static_cast<double*>(PyArray_DATA(input_matrix));
-        double *d_matrix;
-        cudaCheckError(cudaMalloc(&d_matrix, rows * cols * sizeof(double)));
-        cudaCheckError(cudaMemcpy(d_matrix, matrix, rows * cols * sizeof(double), cudaMemcpyHostToDevice));
-        launchRmsNorm<double>(d_matrix, rows, cols);
-        cudaCheckError(cudaMemcpy(matrix, d_matrix, rows * cols * sizeof(double), cudaMemcpyDeviceToHost));
-        cudaCheckError(cudaFree(d_matrix));
+        handleRmsNorm<double>(matrix, rows, cols);
     }
     else{
         PyErr_SetString(PyExc_TypeError, "Invalid data type");
