@@ -32,12 +32,19 @@ __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
     __syncthreads();
 
     // sum up the squares
-    if (tid == 0){
+    for(unsigned int s = blockDim.x/2; s>0; s>>=1){
+        if(tid < s && (tid+s) < cols){
+            sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+    }
+    if (tid==0){
         float sum = sdata[0];
-        float rms = sqrt(sum/cols);
-        sdata[0] = rms > 0.0f ? rms: 1.0f; // division by 0
+        float rms = sqrt(sum / cols);
+        sdata[0] = rms > 0.0f? rms: 1.0f;
     }
     __syncthreads();
+
     // normalize
     if (tid < cols){
         matrix[idx] /= sdata[0];
@@ -66,7 +73,7 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
     // cudaCheckError(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, rmsNormalizationKernel, 0, rows * cols));
     // int gridSize = (rows + blockSize -1)/blockSize;
     // std::cout << "Optimal block size: " << blockSize << ", Grid size: " << gridSize << std::endl;
-    int threadsPerBlock = 256;
+    int threadsPerBlock = (cols < 256)? cols: 256;
     int blocksPerGris = rows;
     size_t sharedMemSize = threadsPerBlock * sizeof(float);
 
