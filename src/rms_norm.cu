@@ -41,7 +41,7 @@ __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
     }
     if (tid==0){
         float total_sum = sdata[0];
-        flaot rms = sqrtf(total_sum/cols);
+        float rms = sqrtf(total_sum/cols);
         sdata[0] = rms > 0.0f? rms: 1.0f;
     }
     __syncthreads();
