@@ -26,9 +26,16 @@ __global__ void rmsNormalizationKernel(T *matrix, int rows, int cols) {
         for (int i = 0; i < cols; ++i) {
             sum += matrix[row * cols + i] * matrix[row * cols + i];
         }
-        double rms = sqrt(sum / cols);
-        for (int i = 0; i < cols; ++i) {
-            matrix[row * cols + i] /= rms;
+        T rms = sqrt(sum / cols);
+        // avoid division by zero
+        if (rms > 0.0){
+            for (int i = 0; i < cols; ++i) {
+                matrix[row * cols + i] /= rms;
+            }
+        } else {
+            for (int i = 0; i < cols; ++i) {
+                matrix[row * cols + i] = 0.0;
+            }
         }
     }
 }

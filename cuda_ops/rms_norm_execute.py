@@ -18,6 +18,9 @@ def compute(matrix: np.array):
     if not isinstance(matrix, np.ndarray):
         raise ValueError("The input matrix should be a NumPy array")
 
+    if matrix.ndim != 2:
+        raise ValueError("The input matrix should be a 2D matrix")
+
     if matrix.dtype != np.float64 and matrix.dtype != np.float32:
         raise ValueError("The input matrix should be of type float32 or float64")
 
