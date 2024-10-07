@@ -19,16 +19,36 @@
 
 
 __global__ void rmsNormalizationKernel(double *matrix, int rows, int cols) {
-    int row = blockIdx.x * blockDim.x + threadIdx.x;
-    if (row < rows) {
-        double sum = 0.0;
-        for (int i = 0; i < cols; ++i) {
-            sum += matrix[row * cols + i] * matrix[row * cols + i];
+    extern __shared__ float sdata[];
+    int row = blockIdx.x;
+    int tid = threadIdx.x;
+    int idx = row * cols + tid;
+
+    // use each thread to compute the square of each element
+    float val = 0.0f;
+    if (tid < cols) {
+        val = matrix[idx] * matrix[idx];
+    }
+    sdata[tid] = val;
+    __syncthreads();
+
+    // sum up the squares
+    for(unsigned int s = blockDim.x/2; s>0; s>>=1){
+        if(tid < s && (tid+s) < cols){
+            sdata[tid] += sdata[tid + s];
         }
-        double rms = sqrt(sum / cols);
-        for (int i = 0; i < cols; ++i) {
-            matrix[row * cols + i] /= rms;
-        }
+        __syncthreads();
+    }
+    if (tid==0){
+        float sum = sdata[0];
+        float rms = sqrt(sum / cols);
+        sdata[0] = rms > 0.0f? rms: 1.0f;
+    }
+    __syncthreads();
+
+    // normalize
+    if (tid < cols){
+        matrix[idx] /= sdata[0];
     }
 }
 
