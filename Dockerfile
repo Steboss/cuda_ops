@@ -1,21 +1,17 @@
 # syntax=docker/dockerfile:1-labs
 FROM nvidia/cuda:12.3.0-devel-ubuntu22.04
 
-# install non-Python dependencies
-RUN <<EOF
-export DEBIAN_FRONTEND=noninteractive
-export TZ=America/Los_Angeles
-apt-get update
-apt-get install -y python-is-python3 python3-pip git
-EOF
-
-RUN pip install --upgrade pip setuptools
-# build and install the package
 WORKDIR /opt/cuda_ops
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY . .
-# add requirements
-RUN <<EOF bash -ex
-pip install --upgrade pip setuptools setuptools_scm wheel numpy
-python setup.py build
-pip install -e .[test]
-EOF
+
+RUN pip install --no-cache-dir --upgrade pip setuptools setuptools_scm wheel numpy
+RUN python setup.py build
+
+RUN apt-get purge -y git && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* /root/.cache/pip

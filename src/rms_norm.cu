@@ -17,7 +17,7 @@
 }
 
 __global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
-    // test with shared memory
+    // with shared memory
     extern __shared__ float sdata[];
     int row = blockIdx.x;
     int tid = threadIdx.x;
@@ -68,16 +68,9 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
     cudaCheckError(cudaMalloc(&d_matrix, rows * cols * sizeof(float)));
     cudaCheckError(cudaMemcpy(d_matrix, matrix, rows * cols * sizeof(float), cudaMemcpyHostToDevice));
 
-    // Launch the kernel
-    // int minGridSize, blockSize;
-    // cudaCheckError(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, rmsNormalizationKernel, 0, rows * cols));
-    // int gridSize = (rows + blockSize -1)/blockSize;
-    // std::cout << "Optimal block size: " << blockSize << ", Grid size: " << gridSize << std::endl;
-    int threadsPerBlock = (cols < 2048)? cols: 2048; // this is a bit fiddly TODO
+    int threadsPerBlock = (cols < 2048)? cols: 2048;
     int blocksPerGris = rows;
     size_t sharedMemSize = threadsPerBlock * sizeof(float);
-
-    //rmsNormalizationKernel<<<gridSize, blockSize>>>(d_matrix, rows, cols);
     rmsNormalizationKernel<<<blocksPerGris, threadsPerBlock, sharedMemSize>>>(d_matrix, rows, cols);
     cudaCheckError(cudaGetLastError());
     // Copy result back to host
