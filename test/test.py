@@ -54,7 +54,7 @@ def test_rms_norm_large_values():
     # we are expecting a matrix of 1s
     expected_output = np.ones_like(m)
 
-    assert np.allclose(m, expected_output, atol=1e-6)
+    assert np.allclose(result_gpu, expected_output, atol=1e-6)
 
 
 def test_rms_norm_small_values():
@@ -66,7 +66,7 @@ def test_rms_norm_small_values():
     # we are expecting a matrix of 1s
     expected_output = np.ones_like(m)
 
-    assert np.allclose(m, expected_output, atol=1e-6)
+    assert np.allclose(result_gpu, expected_output, atol=1e-6)
 
 
 def test_rms_norm_high_range():
@@ -79,7 +79,7 @@ def test_rms_norm_high_range():
     rms_cpu = np.sqrt(np.mean(m**2, axis=1))[:, None]
     expected_output = m / rms_cpu
 
-    assert np.allclose(m, expected_output, atol=1e-6)
+    assert np.allclose(result_gpu, expected_output, atol=1e-6)
 
 
 def test_rms_norm_1d_array():
