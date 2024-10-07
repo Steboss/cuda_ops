@@ -5,13 +5,14 @@ WORKDIR /opt/cuda_ops
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        git python3-pip && \
+        git python3-pip python3-dev \
+        python-is-pyhton3 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
 RUN pip3 install --no-cache-dir --upgrade pip setuptools setuptools_scm wheel numpy
-RUN python3 setup.py build
+RUN python setup.py build
 
 RUN apt-get purge -y git && \
     apt-get autoremove -y && \
