@@ -73,7 +73,7 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
     // cudaCheckError(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, rmsNormalizationKernel, 0, rows * cols));
     // int gridSize = (rows + blockSize -1)/blockSize;
     // std::cout << "Optimal block size: " << blockSize << ", Grid size: " << gridSize << std::endl;
-    int threadsPerBlock = (cols < 2048)? cols: 2048;
+    int threadsPerBlock = (cols < 2048)? cols: 2048; // this is a bit fiddly TODO
     int blocksPerGris = rows;
     size_t sharedMemSize = threadsPerBlock * sizeof(float);
 
