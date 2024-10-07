@@ -7,6 +7,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+
 // Define a macro for checking CUDA errors
 #define cudaCheckError(call) {                                          \
     cudaError_t e=call;                                \
@@ -16,74 +17,74 @@
     }                                                               \
 }
 
-__global__ void rmsNormalizationKernel(float *matrix, int rows, int cols) {
-    // test with shared memory
-    extern __shared__ float sdata[];
-    int row = blockIdx.x;
-    int tid = threadIdx.x;
-    int idx = row * cols + tid;
 
-    // use each thread to compute the square of each element
-    float val = 0.0f;
-    if (tid < cols) {
-        val = matrix[idx] * matrix[idx];
-    }
-    sdata[tid] = val;
-    __syncthreads();
-
-    // sum up the squares
-    for(unsigned int s = blockDim.x/2; s>0; s>>=1){
-        if(tid < s && (tid+s) < cols){
-            sdata[tid] += sdata[tid + s];
+template <typename T>
+__global__ void rmsNormalizationKernel(T *matrix, int rows, int cols) {
+    int row = blockIdx.x * blockDim.x + threadIdx.x;
+    if (row < rows) {
+        T sum = 0.0;
+        for (int i = 0; i < cols; ++i) {
+            sum += matrix[row * cols + i] * matrix[row * cols + i];
         }
-        __syncthreads();
-    }
-    if (tid==0){
-        float sum = sdata[0];
-        float rms = sqrt(sum / cols);
-        sdata[0] = rms > 0.0f? rms: 1.0f;
-    }
-    __syncthreads();
-
-    // normalize
-    if (tid < cols){
-        matrix[idx] /= sdata[0];
+        T rms = sqrt(sum / cols);
+        // avoid division by zero
+        if (rms > 0.0){
+            for (int i = 0; i < cols; ++i) {
+                matrix[row * cols + i] /= rms;
+            }
+        } else {
+            for (int i = 0; i < cols; ++i) {
+                matrix[row * cols + i] = 0.0;
+            }
+        }
     }
 }
 
+template <typename T>
+void launchRmsNorm(T *matrix, int rows, int cols){
+    dim3 blocksize(256);
+    dim3 gridSize((rows + blocksize.x - 1) / blocksize.x);
+    rmsNormalizationKernel<<<gridSize, blocksize>>>(matrix, rows, cols);
+}
+
+
+template <typename T>
+void handleRmsNorm(T *matrix, int rows, int cols){
+    T *d_matrix;
+    cudaStream_t stream;
+    cudaCheckError(cudaStreamCreate(&stream));
+    cudaCheckError(cudaMalloc((void**)&d_matrix, rows * cols * sizeof(T)));
+    cudaCheckError(cudaMemcpyAsync(d_matrix, matrix, rows * cols * sizeof(T), cudaMemcpyHostToDevice, stream));
+    launchRmsNorm<T>(d_matrix, rows, cols);
+    cudaCheckError(cudaMemcpyAsync(matrix, d_matrix, rows * cols * sizeof(T), cudaMemcpyDeviceToHost, stream));
+    cudaCheckError(cudaStreamSynchronize(stream));
+    cudaCheckError(cudaFree(d_matrix));
+    cudaCheckError(cudaStreamDestroy(stream));
+}
 
 static PyObject* rms_norm(PyObject* self, PyObject* args) {
     PyArrayObject *input_matrix;
     if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &input_matrix)) {
-        PyErr_SetString(PyExc_TypeError, "Parameter must be a NumPy array.");
         return NULL;
     }
 
-    float *matrix = static_cast<float*>(PyArray_DATA(input_matrix));
+    double *matrix = static_cast<double*>(PyArray_DATA(input_matrix));
     int rows = PyArray_DIM(input_matrix, 0);
     int cols = PyArray_DIM(input_matrix, 1);
+    int dtype = PyArray_TYPE(input_matrix);
 
-    // Allocate GPU memory and copy data
-    float *d_matrix;
-    cudaCheckError(cudaMalloc(&d_matrix, rows * cols * sizeof(float)));
-    cudaCheckError(cudaMemcpy(d_matrix, matrix, rows * cols * sizeof(float), cudaMemcpyHostToDevice));
-
-    // Launch the kernel
-    // int minGridSize, blockSize;
-    // cudaCheckError(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, rmsNormalizationKernel, 0, rows * cols));
-    // int gridSize = (rows + blockSize -1)/blockSize;
-    // std::cout << "Optimal block size: " << blockSize << ", Grid size: " << gridSize << std::endl;
-    int threadsPerBlock = (cols < 2048)? cols: 2048; // this is a bit fiddly TODO
-    int blocksPerGris = rows;
-    size_t sharedMemSize = threadsPerBlock * sizeof(float);
-
-    //rmsNormalizationKernel<<<gridSize, blockSize>>>(d_matrix, rows, cols);
-    rmsNormalizationKernel<<<blocksPerGris, threadsPerBlock, sharedMemSize>>>(d_matrix, rows, cols);
-    cudaCheckError(cudaGetLastError());
-    // Copy result back to host
-    cudaCheckError(cudaMemcpy(matrix, d_matrix, rows * cols * sizeof(float), cudaMemcpyDeviceToHost));
-
-    cudaCheckError(cudaFree(d_matrix));
+    if (dtype == NPY_FLOAT){
+        float *matrix = static_cast<float*>(PyArray_DATA(input_matrix));
+        handleRmsNorm<float>(matrix, rows, cols);
+    }
+    else if (dtype == NPY_DOUBLE){
+        double *matrix = static_cast<double*>(PyArray_DATA(input_matrix));
+        handleRmsNorm<double>(matrix, rows, cols);
+    }
+    else{
+        PyErr_SetString(PyExc_TypeError, "Invalid data type");
+        return NULL;
+    }
     Py_RETURN_NONE;
 }
 

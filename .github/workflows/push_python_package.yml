@@ -50,7 +50,7 @@ jobs:
                 echo "PUSH_PYTHON_PACKAGE_NAME=$PKG_NAME" >> $GITHUB_ENV
 
 
-            # uncomment below for pushing to pypi + ADD condition if on main
+            # uncomment below for pushing to Pypi.org
             # - name: Install dependencies
             #   if: ${{ github.ref != 'refs/heads/main' }}
             #   run: |

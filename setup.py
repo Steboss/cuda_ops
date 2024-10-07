@@ -22,6 +22,7 @@ class custom_build_ext(build_ext):  # noqa N801
     """Custom build extension to handle CUDA and nvcc"""
 
     def initialize_options(self):
+        """Constructors for the custom build options"""
         super().initialize_options()
         self.inplace = True
 
@@ -29,14 +30,20 @@ class custom_build_ext(build_ext):  # noqa N801
         """Build the CUDA extensions"""
 
         def custom_compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
-            """This function is mainly for compiling the *.cu file
-            The cu file gets compiled in to an *.o file
+            """This is the core function for compiling CUDA files.
+
+            Args:
+                obj (str): The object file to be created
+                src (str): The source file to be compiled
+                ext (Extension): The extension object
+                cc_args (List[str]): The compiler arguments
+                extra_postargs (List[str]): Extra arguments to be passed to the compiler
+                pp_opts (List[str]): Preprocessor options
             """
             if src.endswith(".cu"):
-                # compile the .cu CUDA file
                 self.compiler.set_executable("compiler_so", "nvcc")
                 include_dirs = self.compiler.include_dirs
-                # this is aligned with the Makefile
+                # align the command to the Makefile
                 nvcc_args = ["-I" + inc for inc in include_dirs]
                 nvcc_args += [
                     "-Xcompiler",
@@ -49,7 +56,6 @@ class custom_build_ext(build_ext):  # noqa N801
                 nvcc_args += extra_postargs
                 self.compiler.spawn(["nvcc"] + nvcc_args)
             else:
-                # default compiler
                 super_compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
 
         self.compiler.src_extensions.append(".cu")

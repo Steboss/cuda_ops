@@ -24,7 +24,6 @@ runs:
   using: "composite"
   steps:
 
-    # Pull the tags that match `v{number}.{number}*` (matches both v9.0 and v9.0.0), but if this fails (managed using ||), add a new v0.0.0 tag
     - name: Add fake tag (v0.0.0) on first ever commit in case no other tag is present (this is required to set an initial "diff" for the github-tag-action)
       run: |
         git fetch origin ${{ inputs.main-branch }} --tags && \

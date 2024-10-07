@@ -21,4 +21,10 @@ repos:
       args: [--fix, --exit-non-zero-on-fix]
     - id: ruff-format
 
-# TODO Add the uv checks
+- repo: https://github.com/jazzband/pip-tools
+  rev: 7.4.1
+  hooks:
+    - id: pip-compile
+      name: Check requirements.txt up-to-date
+      args: ["--resolver=backtracking", "--no-emit-index-url", "--extra=all", "--output-file=requirements.txt", "pyproject.toml"]
+      files: ^(pyproject\.toml|requirements\.txt)$
