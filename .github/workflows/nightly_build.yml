@@ -1,18 +1,16 @@
----
-name: On push to main branch
+name: Nightly Build CI
 
 on:
-    push:
-        branches:
-            - 'main'
+    schedule:
+        - cron: '0 0 * * *'
+
 
 permissions:
     id-token: write
     contents: write
 
 jobs:
-
-    push-python-package-main:
+    push-python-package-nightly:
         uses: ./.github/workflows/push_python_package.yml
         secrets:
             PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -20,20 +18,20 @@ jobs:
             TOKEN: ${{ secrets.TOKEN }}
 
 
-    build-and-push-image:
-        needs: push-python-package-main
+    build-and-push-image-nightly:
+        needs: push-python-package-nightly
         uses: ./.github/workflows/build_and_push_image.yml
         with:
-            package-base-version: ${{ needs.push-python-package-main.outputs.package-base-version }}
-            package-dev-version: ${{ needs.push-python-package-main.outputs.package-dev-version }}
+            package-base-version: ${{ needs.push-python-package-nightly.outputs.package-base-version }}
+            package-dev-version: ${{ needs.push-python-package-nightly.outputs.package-dev-version }}
         secrets:
             DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
             DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    create-release:
-        needs: push-python-package-main
+    create-release-nightly:
+        needs: push-python-package-nightly
         uses: ./.github/workflows/create_release.yml
         with:
-            package-base-version: ${{ needs.push-python-package-main.outputs.package-base-version }}
+            package-base-version: "${{ needs.push-python-package-nightly.outputs.package-base-version }}-nightly"
         secrets:
             TOKEN: ${{ secrets.TOKEN }}
