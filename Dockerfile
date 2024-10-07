@@ -11,7 +11,8 @@ RUN apt-get update && \
 
 COPY . .
 
-RUN pip3 install --no-cache-dir --upgrade pip setuptools setuptools_scm wheel numpy
+RUN pip install --no-cache-dir --upgrade pip setuptools setuptools_scm wheel numpy
+RUN pip install -e .[test]
 RUN python setup.py build
 
 RUN apt-get purge -y git && \
