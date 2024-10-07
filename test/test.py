@@ -15,7 +15,7 @@ def test_rms_norm(n: int):
     This test checks whethe the CPU result and GPU are aligned"""
     m = np.random.randn(n, n)
     result_gpu = m.copy()
-    rms_norm_execute.execute(result_gpu)  # in-place update
+    rms_norm_execute.compute(result_gpu)  # in-place update
     result_cpu = m / np.sqrt(np.mean(m**2, axis=1))[:, None]
 
     assert np.allclose(result_cpu, result_gpu)
@@ -28,7 +28,7 @@ def test_rms_norm_with_known_input():
     expected_rms = np.sqrt((9 + 16) / 2)
     expected_rms_norm = m / expected_rms
 
-    rms_norm_execute.execute(m)
+    rms_norm_execute.compute(m)
 
     assert np.allclose(m, expected_rms_norm, atol=1e-6)
 
@@ -38,7 +38,7 @@ def test_rms_norm_with_zero_matrix():
     m = np.zeros((2, 2))
 
     try:
-        rms_norm_execute.execute(m)
+        rms_norm_execute.compute(m)
     except ZeroDivisionError:
         pass
     else:
@@ -50,7 +50,7 @@ def test_rms_norm_large_values():
     large_value = 1e20
     m = np.full((10, 10), large_value)
     result_gpu = m.copy()
-    rms_norm_execute.execute(result_gpu)
+    rms_norm_execute.compute(result_gpu)
     # we are expecting a matrix of 1s
     expected_output = np.ones_like(m)
 
@@ -62,7 +62,7 @@ def test_rms_norm_small_values():
     small_value = 1e-20
     m = np.full((10, 10), small_value)
     result_gpu = m.copy()
-    rms_norm_execute.execute(result_gpu)
+    rms_norm_execute.compute(result_gpu)
     # we are expecting a matrix of 1s
     expected_output = np.ones_like(m)
 
@@ -75,7 +75,7 @@ def test_rms_norm_high_range():
     values = np.power(10, exponents).astype(np.float32)
     m = np.tile(values, (10, 1))
     result_gpu = m.copy()
-    rms_norm_execute.execute(result_gpu)
+    rms_norm_execute.compute(result_gpu)
     rms_cpu = np.sqrt(np.mean(m**2, axis=1))[:, None]
     expected_output = m / rms_cpu
 
@@ -86,4 +86,4 @@ def test_rms_norm_1d_array():
     """This is a test to see if the checks are working with 1D arrays"""
     m = np.array([1, 2, 3, 4, 5])
     with pytest.raises(ValueError, match="The input matrix should be a 2D matrix"):
-        rms_norm_execute.execute(m)
+        rms_norm_execute.compute(m)
