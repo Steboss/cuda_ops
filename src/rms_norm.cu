@@ -50,6 +50,7 @@ static PyObject* rms_norm(PyObject* self, PyObject* args) {
     double *matrix = static_cast<double*>(PyArray_DATA(input_matrix));
     int rows = PyArray_DIM(input_matrix, 0);
     int cols = PyArray_DIM(input_matrix, 1);
+    int dtype = PyArray_TYPE(input_matrix);
 
     if (dtype == NPY_FLOAT){
         float *matrix = static_cast<float*>(PyArray_DATA(input_matrix));
