@@ -14,9 +14,6 @@ on:
         secrets:
             TOKEN:
                 required: true
-    push:
-        tags:
-            - 'v*'
 
 jobs:
     create-release:
